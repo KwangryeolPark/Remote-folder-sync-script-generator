@@ -57,6 +57,8 @@ read ignore_file_path
 echo ">>    Generating sync script..."
 sync_script_name=sync-$sync_service_name.sh
 echo "#!/bin/bash" > $sync_script_name
+echo "rsync -avz --delete --exclude-from=$ignore_file_path -e "ssh -i ~/.ssh/$ssh_key_name -p $remote_port" $folder_path/ $remote_username@$remote_ip:$remote_folder_path" > $sync_script_name
+
 echo "while true; do" >> $sync_script_name
 echo "  inotifywait -r -e modify,create,delete $folder_path" >> $sync_script_name
 if [ -z "$ignore_file_path" ]
