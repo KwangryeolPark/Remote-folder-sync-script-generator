@@ -51,14 +51,18 @@ ssh-copy-id -i ~/.ssh/$ssh_key_name.pub -p $remote_port $remote_username@$remote
 echo ">>    Enter the path of the folder on the remote server: "
 read remote_folder_path
 
-echo ">>    Enter the path of the .ignore file (leave empty if default .gitignore): "
-read ignore_file_path
+ignore_file_path=$folder_path/.ignore
 
-if [ -z "$ignore_file_path" ]
-then
-    ignore_file_path=$folder_path/.gitignore
-else
-    ignore_file_path=$ignore_file_path
+# .ignore 파일이 없으면 생성하고, .git/ 추가
+if [ ! -f "$ignore_file_path" ]; then
+    touch "$ignore_file_path"
+    echo ".git/" >> "$ignore_file_path"  # .git/ 추가
+fi
+
+# .gitignore 파일이 있으면, 그 내용을 .ignore 파일에 추가
+gitignore_path=$folder_path/.gitignore
+if [ -f "$gitignore_path" ]; then
+    cat "$gitignore_path" >> "$ignore_file_path"
 fi
 
 echo ">>    Generating sync script..."
