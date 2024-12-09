@@ -51,22 +51,24 @@ ssh-copy-id -i ~/.ssh/$ssh_key_name.pub -p $remote_port $remote_username@$remote
 echo ">>    Enter the path of the folder on the remote server: "
 read remote_folder_path
 
-echo ">>    Enter the path of the .ignore file (leave empty if not needed): "
+echo ">>    Enter the path of the .ignore file (leave empty if default .ignore): "
 read ignore_file_path
 
-echo ">>    Generating sync script..."
-sync_script_name=sync-$sync_service_name.sh
-echo "#!/bin/bash" > $sync_script_name
-echo "rsync -avz --delete --exclude-from=$ignore_file_path -e "ssh -i ~/.ssh/$ssh_key_name -p $remote_port" $folder_path/ $remote_username@$remote_ip:$remote_folder_path" > $sync_script_name
-
-echo "while true; do" >> $sync_script_name
-echo "  inotifywait -r -e modify,create,delete $folder_path" >> $sync_script_name
 if [ -z "$ignore_file_path" ]
 then
     ignore_file_path=$folder_path/.ignore
 else
     ignore_file_path=$ignore_file_path
 fi
+
+echo ">>    Generating sync script..."
+sync_script_name=sync-$sync_service_name.sh
+echo "#!/bin/bash" > $sync_script_name
+
+echo "rsync -avz --delete --exclude-from=$ignore_file_path -e "ssh -i ~/.ssh/$ssh_key_name -p $remote_port" $folder_path/ $remote_username@$remote_ip:$remote_folder_path" > $sync_script_name
+
+echo "while true; do" >> $sync_script_name
+echo "  inotifywait -r -e modify,create,delete $folder_path" >> $sync_script_name
 echo "  rsync -avz --delete --exclude-from=$ignore_file_path -e \"ssh -i ~/.ssh/$ssh_key_name -p $remote_port\" $folder_path/ $remote_username@$remote_ip:$remote_folder_path" >> $sync_script_name
 echo "done" >> $sync_script_name
 
